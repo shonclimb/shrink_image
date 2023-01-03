@@ -48,9 +48,10 @@ def main():
     file_list = glob.glob(pwd + '/*')
     index = 0
     for file in file_list:
-        if any(map(file.__contains__,('PNG', 'JPG', 'jpg', 'jpeg'))):
+        if any(map(file.__contains__,('PNG', 'JPG', 'jpg', 'jpeg','png'))):
             # 画像サイズを確認
             img = Image.open(file)
+            extension = str(file).split(".")[1]
             print('filesize: {}, width: {}, height: {}'.format(os.path.getsize(file)*0.000001,img.width, img.height))
             while os.path.getsize(file) > FILESIZE:
                 # 読み込んだ画像の幅、高さを取得し半分に
@@ -58,7 +59,6 @@ def main():
                 # 画像をリサイズする
                 img = img.resize((width, height))
                 # ファイルを保存
-                extension = str(file).split(".")[1]
                 img.save(file, quality=90)
                 print('filesize: {}, width: {}, height: {}'.format(os.path.getsize(file)*0.000001, img.width, img.height))
             print('shtil copy')
