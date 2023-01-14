@@ -37,10 +37,12 @@ def main():
         if 'HEIC' in file:
             command = 'sips --setProperty format jpeg ' + file +  ' --out ' + file.replace('.HEIC','.jpeg')
             subprocess.call(command, shell=True)
+            os.remove(file)
         elif 'heic' in file:
             command = 'sips --setProperty format jpeg ' + file +  ' --out ' + file.replace('.heic','.jpeg')
             subprocess.call(command, shell=True)
-        os.remove(file)
+            os.remove(file)
+        
 
     dst_folder = rf'{pwd}/{IMAGENAME}'
     if not os.path.exists(dst_folder):
@@ -54,6 +56,7 @@ def main():
             img = Image.open(file)
             extension = str(file).split(".")[1]
             print('filesize: {}, width: {}, height: {}'.format(os.path.getsize(file)*0.000001,img.width, img.height))
+
             while os.path.getsize(file) > FILESIZE:
                 # 読み込んだ画像の幅、高さを取得し半分に
                 (width, height) = (int(img.width*0.9) , int(img.height*0.9))
@@ -62,8 +65,14 @@ def main():
                 # ファイルを保存
                 img.save(file, quality=90)
                 print('filesize: {}, width: {}, height: {}'.format(os.path.getsize(file)*0.000001, img.width, img.height))
-            print('shtil copy')
-            shutil.copyfile(file, rf'{dst_folder}/{IMAGENAME}_{index}.{extension}')
+
+            dst_file_path = rf'{dst_folder}/{IMAGENAME}_{index}.{extension}'
+            while os.path.isfile(dst_file_path):
+                index += 1
+                dst_file_path = rf'{dst_folder}/{IMAGENAME}_{index}.{extension}'
+               
+            shutil.copyfile(file, dst_file_path)
+            print('copyed')
             os.remove(file)
             index += 1
         else:
