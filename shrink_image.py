@@ -32,14 +32,15 @@ def main():
     print(pwd)
     file_list = glob.glob(pwd + '/*')
     
-    for filename in file_list:
+    for file in file_list:
         # HEICファイルだった場合はjpeg変換
-        if 'HEIC' in filename:
-            command = 'sips --setProperty format jpeg ' + filename +  ' --out ' + filename.replace('.HEIC','.jpeg')
+        if 'HEIC' in file:
+            command = 'sips --setProperty format jpeg ' + file +  ' --out ' + file.replace('.HEIC','.jpeg')
             subprocess.call(command, shell=True)
-        elif 'heic' in filename:
-            command = 'sips --setProperty format jpeg ' + filename +  ' --out ' + filename.replace('.heic','.jpeg')
+        elif 'heic' in file:
+            command = 'sips --setProperty format jpeg ' + file +  ' --out ' + file.replace('.heic','.jpeg')
             subprocess.call(command, shell=True)
+        os.remove(file)
 
     dst_folder = rf'{pwd}/{IMAGENAME}'
     if not os.path.exists(dst_folder):
