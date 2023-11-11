@@ -1,4 +1,4 @@
-from PIL import Image
+from PIL import Image, ExifTags
 import os
 import glob
 import pyheif
@@ -37,13 +37,11 @@ def main():
         if 'HEIC' in file:
             command = 'sips --setProperty format jpeg ' + file +  ' --out ' + file.replace('.HEIC','.jpeg')
             subprocess.call(command, shell=True)
-            os.remove(file)
         elif 'heic' in file:
             command = 'sips --setProperty format jpeg ' + file +  ' --out ' + file.replace('.heic','.jpeg')
             subprocess.call(command, shell=True)
             os.remove(file)
         
-
     dst_folder = rf'{pwd}/{IMAGENAME}'
     if not os.path.exists(dst_folder):
         os.mkdir(dst_folder)
@@ -55,24 +53,32 @@ def main():
             # 画像サイズを確認
             img = Image.open(file)
             extension = str(file).split(".")[1]
-            print('filesize: {}, width: {}, height: {}'.format(os.path.getsize(file)*0.000001,img.width, img.height))
 
+            # メタデータ（Exif情報）の取得
+            try:
+                exif = dict(img._getexif().items())
+                orientation = exif[ExifTags.TAGS['Orientation']]
+                if orientation == 3:
+                    img = img.transpose(Image.ROTATE_180)
+                elif orientation == 6:
+                    img = img.transpose(Image.ROTATE_270)
+                elif orientation == 8:
+                    img = img.transpose(Image.ROTATE_90)
+            except (AttributeError, KeyError, IndexError):
+                # 例外が発生した場合は単に続行
+                pass
+
+            print('filesize: {}, width: {}, height: {}'.format(os.path.getsize(file)*0.000001,img.width, img.height))
             while os.path.getsize(file) > FILESIZE:
-                # 読み込んだ画像の幅、高さを取得し半分に
+                # 読み込んだ画像の幅、高さを取得し0.9倍する
                 (width, height) = (int(img.width*0.9) , int(img.height*0.9))
                 # 画像をリサイズする
                 img = img.resize((width, height))
                 # ファイルを保存
                 img.save(file, quality=90)
                 print('filesize: {}, width: {}, height: {}'.format(os.path.getsize(file)*0.000001, img.width, img.height))
-
-            dst_file_path = rf'{dst_folder}/{IMAGENAME}_{index}.{extension}'
-            while os.path.isfile(dst_file_path):
-                index += 1
-                dst_file_path = rf'{dst_folder}/{IMAGENAME}_{index}.{extension}'
-               
-            shutil.copyfile(file, dst_file_path)
-            print('copyed')
+            print('shtil copy')
+            shutil.copyfile(file, rf'{dst_folder}/{IMAGENAME}_{index}.{extension}')
             os.remove(file)
             index += 1
         else:
